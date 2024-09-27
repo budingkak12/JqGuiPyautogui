@@ -200,28 +200,28 @@ class Task:
                 # 执行对应的操作，并打印日志
                 if action in ['点击', '右击', '双击', '点击并输入']:
                     txt = str(row.get('要输入的内容', ''))
-                    print(f"执行操作: {action}, 输入内容: '{txt}'")
+                    print(f" {action},  '{image_file}'")
                     perform_action(image_path, image_file, action, txt, self)
 
                 elif action == '输入':
                     txt = str(row['要输入的内容'])
                     pyperclip.copy(txt)
-                    print(f"执行操作: {action}, 输入内容: '{txt}'")
+                    print(f" {action},  '{txt}'")
                     pyautogui.hotkey('ctrl', 'v')
 
                 elif action == '按键':
                     key_combo = row['要输入的内容'].split('+')
-                    print(f"执行操作: {action}, 按键组合: '{' + '.join(key_combo)}'")
+                    print(f" {action}, '{' + '.join(key_combo)}'")
                     pyautogui.hotkey(*key_combo)
 
                 elif action == '等待':
                     wait_time = float(row['要输入的内容'])
-                    print(f"执行操作: {action}, 等待时间: {wait_time} 秒")
+                    print(f" {action},  {wait_time} 秒")
                     time.sleep(wait_time)
 
                 elif action == '代码':
                     program_path = row['要输入的内容']
-                    print(f"执行操作: {action}, 关闭程序: '{program_path}'")
+                    print(f": {action},  '{program_path}'")
 
                     # 关闭程序
                     subprocess.run(["taskkill", "/F", "/IM", "360ChromeX.exe"], stdout=subprocess.PIPE,
