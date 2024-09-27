@@ -6,6 +6,8 @@ import pandas as pd
 import time
 import os
 from threading import Thread
+import subprocess
+
 
 # 读取和写入任务状态的配置文件
 config_file = 'config.json'
@@ -137,7 +139,7 @@ class Task:
         self.enable_all_tasks()
 
 
-    def run_task(self):
+    def run_taskkk(self):
         image_directory = os.path.join(os.path.dirname(self.file_path), "png")
 
         for _, row in self.df.iterrows():
@@ -173,6 +175,64 @@ class Task:
                     wait_time = float(row['要输入的内容'])
                     print(f" {action},  {wait_time} 秒")
                     time.sleep(wait_time)
+
+        # 更新状态标签为“执行完毕”，并设置为绿色
+        self.row_frame.status_label.config(text="执行完毕", fg="green")
+        self.enable_all_tasks()
+
+    import subprocess  # 确保导入 subprocess 模块
+
+    def run_task(self):
+        image_directory = os.path.join(os.path.dirname(self.file_path), "png")
+
+        for _, row in self.df.iterrows():
+            if not self.running:  # 检查是否被终止
+                print("任务被终止")
+                break  # 退出循环，终止任务
+
+            action = row['操作']
+            excldel = row['是否逻辑删除']
+
+            if excldel != 1:
+                image_file = f"{row['图片名']}.png"
+                image_path = os.path.join(image_directory, image_file)
+
+                # 执行对应的操作，并打印日志
+                if action in ['点击', '右击', '双击', '点击并输入']:
+                    txt = str(row.get('要输入的内容', ''))
+                    print(f"执行操作: {action}, 输入内容: '{txt}'")
+                    perform_action(image_path, image_file, action, txt, self)
+
+                elif action == '输入':
+                    txt = str(row['要输入的内容'])
+                    pyperclip.copy(txt)
+                    print(f"执行操作: {action}, 输入内容: '{txt}'")
+                    pyautogui.hotkey('ctrl', 'v')
+
+                elif action == '按键':
+                    key_combo = row['要输入的内容'].split('+')
+                    print(f"执行操作: {action}, 按键组合: '{' + '.join(key_combo)}'")
+                    pyautogui.hotkey(*key_combo)
+
+                elif action == '等待':
+                    wait_time = float(row['要输入的内容'])
+                    print(f"执行操作: {action}, 等待时间: {wait_time} 秒")
+                    time.sleep(wait_time)
+
+                elif action == '代码':
+                    program_path = row['要输入的内容']
+                    print(f"执行操作: {action}, 关闭程序: '{program_path}'")
+
+                    # 关闭程序
+                    subprocess.run(["taskkill", "/F", "/IM", "360ChromeX.exe"], stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+
+                    # 等待程序完全关闭
+                    time.sleep(0.5)
+
+                    # 重新打开程序
+                    subprocess.Popen(program_path)
+                    print(f"重新打开程序: '{program_path}'")
 
         # 更新状态标签为“执行完毕”，并设置为绿色
         self.row_frame.status_label.config(text="执行完毕", fg="green")
